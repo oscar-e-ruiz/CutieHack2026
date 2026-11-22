@@ -105,10 +105,7 @@ if photo is not None:
                 st.session_state.camera_key += 1
                 st.rerun()
 
-# Profile settings / leaderboard / sightings map
-st.page_link("app_pages/profile.py", label="Profile and settings")
-st.page_link("app_pages/leaderboard.py", label="Leaderboard")
-st.page_link("app_pages/live_map.py", label="Sightings Map")
+
 
 # Logout
 st.button("Sign out", on_click=st.logout)

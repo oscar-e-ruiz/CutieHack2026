@@ -1,7 +1,7 @@
 # Supabase-backed helpers: auth, profile lookup, and sighting submit.
 
 from dataclasses import asdict
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from uuid import uuid4
 
 import streamlit as st
@@ -39,17 +39,19 @@ def _parse_datetime(value: datetime | str) -> datetime:
 
 
 def _row_to_sighting(row: dict) -> Sighting:
+    captured_at = _parse_datetime(row["captured_at"])
+    submitted_raw = row.get("submitted_at") or row["captured_at"]
     return Sighting(
         id=str(row["id"]),
         user_id=row["user_id"],
-        photo_url=row["photo_url"],
-        captured_at=_parse_datetime(row["captured_at"]),
-        submitted_at=_parse_datetime(row["submitted_at"]),
+        photo_url=row.get("photo_url") or "",
+        captured_at=captured_at,
+        submitted_at=_parse_datetime(submitted_raw),
         latitude=float(row["latitude"]),
         longitude=float(row["longitude"]),
-        gps_accuracy=float(row["gps_accuracy"]),
-        group_size=int(row["group_size"]),
-        behavior=row["behavior"],
+        gps_accuracy=float(row["gps_accuracy"] or 0),
+        group_size=int(row["group_size"] or 1),
+        behavior=row.get("behavior") or "unknown",
         points_earned=int(row.get("points_earned") or 0),
     )
 
@@ -144,3 +146,35 @@ class BurroWatchService:
         if not rows:
             raise RuntimeError("Sighting insert did not return a row.")
         return _row_to_sighting(rows[0])
+
+    def get_map_sightings(self, days: int = 7) -> list[Sighting]:
+        """Return recent sightings with coordinates rounded to ~100 m for the public map."""
+        cutoff = datetime.now(timezone.utc) - timedelta(days=days)
+        rows = (
+            self.db.table("Sightings")
+            .select(SIGHTING_COLUMNS)
+            .gte("captured_at", cutoff.isoformat())
+            .order("captured_at", desc=True)
+            .execute()
+            .data
+        ) or []
+
+        sightings: list[Sighting] = []
+        for row in rows:
+            sighting = _row_to_sighting(row)
+            sightings.append(
+                Sighting(
+                    id=sighting.id,
+                    user_id=sighting.user_id,
+                    photo_url=sighting.photo_url,
+                    captured_at=sighting.captured_at,
+                    submitted_at=sighting.submitted_at,
+                    latitude=round(sighting.latitude, 3),
+                    longitude=round(sighting.longitude, 3),
+                    gps_accuracy=sighting.gps_accuracy,
+                    group_size=sighting.group_size,
+                    behavior=sighting.behavior,
+                    points_earned=sighting.points_earned,
+                )
+            )
+        return sightings

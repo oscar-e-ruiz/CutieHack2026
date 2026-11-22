@@ -25,5 +25,6 @@ page = st.navigation([
     st.Page("app_pages/report.py", title="Take photo"),
     st.Page("app_pages/leaderboard.py", title="Leaderboard"),
     st.Page("app_pages/live_map.py", title="Sightings Map"),
+    st.Page("app_pages/export.py", title="Export"),
 ])
 page.run()
