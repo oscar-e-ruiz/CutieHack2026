@@ -3,7 +3,7 @@ import streamlit as st
 
 from service import get_client
 
-st.title("Live sightings map")
+st.title("Live Sightings Map")
 st.caption("Updates every 10 seconds.")
 
 
