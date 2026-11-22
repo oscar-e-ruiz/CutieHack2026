@@ -9,25 +9,43 @@ with open(".streamlit/secrets.toml", "rb") as file:
 
 client = create_client(settings["SUPABASE_URL"], settings["SUPABASE_KEY"])
 
-sighting = {
-    "user_id": str(uuid.uuid4()),  # Generates a random valid UUID
-    "photo_url": "https://example.com/test-photo.jpg",
-    "captured_at": datetime.now(timezone.utc).isoformat(),
-    "latitude": 33.97,
-    "longitude": -117.33,
-}
+coordinates = [
+    (33.9737, -117.3281),
+    (33.9745, -117.3287),
+    (33.9729, -117.3274),
+    (33.9751, -117.3268),
+    (33.9722, -117.3291),
+    (33.9740, -117.3300),
+    (33.9718, -117.3265),
+    (33.9760, -117.3295),
+    (33.9733, -117.3258),
+    (33.9752, -117.3310),
+]
+captured_at = datetime.now(timezone.utc).isoformat()
+sightings = [
+    {
+        "user_id": str(uuid.uuid4()),
+        "photo_url": "https://example.com/test-photo.jpg",
+        "captured_at": captured_at,
+        "latitude": latitude,
+        "longitude": longitude,
+    }
+    for latitude, longitude in coordinates
+]
 
-client.table("Sightings").insert(sighting, returning="minimal").execute()
-print("Test sighting inserted!")
+client.table("Sightings").insert(sightings, returning="minimal").execute()
+print(f"Inserted {len(sightings)} test sightings.")
 
 response = (
     client.table("Sightings")
     .select("*")
-    .eq("user_id", sighting["user_id"])
+    .in_("user_id", [sighting["user_id"] for sighting in sightings])
     .execute()
 )
 
-if response.data:
-    print("Matching sightings:", response.data)
-else:
-    print("No matching sighting is visible. Check SELECT permissions and RLS.")
+if len(response.data) != len(sightings):
+    raise RuntimeError(
+        f"Only {len(response.data)} of {len(sightings)} inserted sightings are visible. "
+        "Check SELECT permissions and RLS before running this script again."
+    )
+print(f"Verified {len(response.data)} sightings.")
