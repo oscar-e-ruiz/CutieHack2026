@@ -21,7 +21,6 @@ st.session_state.user = user
 
 page = st.navigation([
     st.Page("app_pages/home.py", title="Home", default=True),
-    st.Page("app_pages/live_map.py", title="Live map"),
     st.Page("app_pages/profile.py", title="Profile and settings"),
     st.Page("app_pages/report.py", title="Take photo"),
     st.Page("app_pages/leaderboard.py", title="Leaderboard"),
