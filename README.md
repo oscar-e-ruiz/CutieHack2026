@@ -33,7 +33,9 @@ Cutie Hack hackathon project 2026
         +getMapSightings() List~Sighting~
         +exportCSV() String
     }
+    
     User "1" --> "0..*" Sighting : submits
     BurroWatchService ..> User : reads and updates
     BurroWatchService ..> Sighting : saves and retrieves
+    
     '''
