@@ -1,13 +1,25 @@
-# Data models shared across the app (User shape mirrors the Supabase users table).
-
 from dataclasses import dataclass
-
+from datetime import datetime
 
 @dataclass
 class User:
-    """A BurroWatch account: identity, display info, and points score."""
-
-    id: str  # Auth subject (st.user.sub) — primary key in Supabase
+    
+    id: str
     display_name: str
     profile_photo_url: str | None
-    score: int = 0  # Points earned from reporting burro sightings
+    score: int = 0
+
+@dataclass
+class Sighting:
+    
+    id: str
+    user_id: str
+    photo_url: str
+    captured_at: datetime
+    submitted_at: datetime
+    latitude: float
+    longitude: float
+    gps_accuracy: float
+    group_size: int
+    behavior: str
+    points_earned: int
