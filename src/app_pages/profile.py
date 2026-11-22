@@ -1,6 +1,8 @@
+# Profile page: photo, display name, score, and sign-out.
+
 import streamlit as st
 
-user = st.session_state.user
+user = st.session_state.user  # Set in streamlit_app.py after login
 
 if user.profile_photo_url:
     st.image(user.profile_photo_url, width=96)
