@@ -50,6 +50,4 @@ def sightings_map() -> None:
 
 sightings_map()
 
-st.page_link("app_pages/home.py", label="Home")
-st.page_link("app_pages/leaderboard.py", label="Leaderboard")
-st.page_link("app_pages/export.py", label="Export")
+
