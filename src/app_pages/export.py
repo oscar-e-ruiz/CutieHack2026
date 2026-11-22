@@ -40,7 +40,3 @@ else:
     # export_csv() returns None when Sightings is empty.
     st.info("No sightings to export yet. Submit one from Home, then come back here.")
 
-# Navigation back into the rest of the app.
-st.page_link("app_pages/home.py", label="Home")
-st.page_link("app_pages/live_map.py", label="Sightings Map")
-st.page_link("app_pages/leaderboard.py", label="Leaderboard")
