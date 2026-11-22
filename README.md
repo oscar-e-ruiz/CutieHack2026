@@ -97,12 +97,11 @@ src/
   service.py           # BurroWatchService (Supabase)
   models.py            # User, Sighting dataclasses
   app_pages/
-    home.py            # capture + submit flow
+    home.py            # camera + GPS + submit flow
     live_map.py        # map of recent sightings
     export.py          # CSV download
     leaderboard.py     # top scores
     profile.py         # profile + sign out
-    report.py          # leftover camera page; real capture is on Home
 ```
 
 ## Service API
