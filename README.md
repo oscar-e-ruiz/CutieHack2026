@@ -2,7 +2,8 @@
 Cutie Hack hackathon project 2026
 
 
-'''classDiagram
+'''
+classDiagram
 
 
     class User {
@@ -38,4 +39,4 @@ Cutie Hack hackathon project 2026
     BurroWatchService ..> User : reads and updates
     BurroWatchService ..> Sighting : saves and retrieves
     
-    '''
+'''
