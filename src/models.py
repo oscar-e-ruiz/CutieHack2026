@@ -6,8 +6,8 @@ class User:
     
     id: str
     display_name: str
-    profile_photo_url: str
-    score: int
+    profile_photo_url: str | None
+    score: int = 0
 
 @dataclass
 class Sighting:
