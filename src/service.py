@@ -1,5 +1,7 @@
-# Supabase-backed helpers: auth, profile lookup, and sighting submit.
+# Supabase-backed helpers: auth, profile lookup, sighting submit, map, and CSV export.
 
+import csv
+import io
 from dataclasses import asdict
 from datetime import datetime, timedelta, timezone
 from uuid import uuid4
@@ -169,6 +171,7 @@ class BurroWatchService:
                     photo_url=sighting.photo_url,
                     captured_at=sighting.captured_at,
                     submitted_at=sighting.submitted_at,
+                    # Public map: round to 3 decimals (~100 m), unlike CSV export.
                     latitude=round(sighting.latitude, 3),
                     longitude=round(sighting.longitude, 3),
                     gps_accuracy=sighting.gps_accuracy,
@@ -178,3 +181,65 @@ class BurroWatchService:
                 )
             )
         return sightings
+
+    def export_csv(self) -> str | None:
+        """Build a researcher CSV of all sightings, or None when the table is empty.
+
+        Notes:
+        - Uses exact coordinates (not the rounded map values).
+        - Identifies people only by Google `sub` in user_id — no names or emails.
+        - Header names match the handoff export spec (gps_accuracy_m, sighting_id).
+        """
+        # Pull every sighting; order oldest-first so the CSV reads chronologically.
+        rows = (
+            self.db.table("Sightings")
+            .select(SIGHTING_COLUMNS)
+            .order("captured_at", desc=False)
+            .execute()
+            .data
+        ) or []
+
+        # Empty table → page should show a clear "no data" message instead of a blank file.
+        if not rows:
+            return None
+
+        sightings = [_row_to_sighting(row) for row in rows]
+
+        # csv module + StringIO keeps us dependency-free (no pandas required here).
+        buffer = io.StringIO()
+        writer = csv.DictWriter(
+            buffer,
+            fieldnames=[
+                "sighting_id",
+                "user_id",
+                "captured_at",
+                "submitted_at",
+                "latitude",
+                "longitude",
+                "gps_accuracy_m",
+                "group_size",
+                "behavior",
+                "photo_url",
+                "points_earned",
+            ],
+        )
+        writer.writeheader()
+
+        for sighting in sightings:
+            writer.writerow(
+                {
+                    "sighting_id": sighting.id,
+                    "user_id": sighting.user_id,  # Google sub only
+                    "captured_at": sighting.captured_at.isoformat(),
+                    "submitted_at": sighting.submitted_at.isoformat(),
+                    "latitude": sighting.latitude,  # exact coords for research
+                    "longitude": sighting.longitude,
+                    "gps_accuracy_m": sighting.gps_accuracy,
+                    "group_size": sighting.group_size,
+                    "behavior": sighting.behavior,
+                    "photo_url": sighting.photo_url,
+                    "points_earned": sighting.points_earned,
+                }
+            )
+
+        return buffer.getvalue()
